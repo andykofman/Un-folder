@@ -26,7 +26,16 @@ def select_multiple_folders():
 
 def select_destination_folder(app):
     print("[DEBUG] Launching wx.DirDialog for destination folder selection...")
-    dialog = wx.DirDialog(None, "Select destination folder", style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+    # Show a popup message first
+    wx.MessageBox(
+        "You will now select the DESTINATION folder. This is where all files will be copied.\n\nPlease choose carefully and press OK to continue.",
+        "Select Destination Folder",
+        wx.OK | wx.ICON_INFORMATION
+    )
+    dialog = wx.DirDialog(None, "Select destination folder",
+                         style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+    dialog.SetMessage("Please select the DESTINATION folder (where files will be copied)")
+    dialog.SetTitle("Select Destination Folder")
     destination_folder = None
     if dialog.ShowModal() == wx.ID_OK:
         destination_folder = dialog.GetPath()
