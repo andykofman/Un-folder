@@ -1,6 +1,8 @@
 # Folder Flattener
 
 **I was frustrated by ChatGPT's lack of multi-folder upload, so I made this.**
+
+
 A quick, techy solution to flatten files from multiple folders into a single directory, no matter how nested your source folders are.
 
 ## What is it?
@@ -12,7 +14,7 @@ A dual-interface tool (GUI and web) to flatten files from multiple folders into 
 
 ## Features
 
-- Select multiple folders (desktop) or files (web) and flatten all contents into a single destination.
+- Select multiple folders (desktop) or drag and drop (web) and flatten all contents into a single destination.
 - Handles filename collisions by auto-renaming.
 - Skips hidden folders and `__pycache__`.
 - Simple, no-nonsense UI.
