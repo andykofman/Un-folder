@@ -1,8 +1,40 @@
 import os
 import shutil
-import easygui
-import tkinter as tk
-from tkinter import filedialog, messagebox
+# wxPython is required for all dialogs. Install with: pip install wxPython
+import wx
+
+def select_multiple_folders():
+    print("[DEBUG] Launching wx.DirDialog for multi-folder selection...")
+    app = wx.App(False)
+    dialog = wx.DirDialog(None, "Select folders to flatten (Ctrl+Click or Shift+Click for multi-select)",
+                         style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST | wx.DD_MULTIPLE)
+    folder_paths = []
+    if dialog.ShowModal() == wx.ID_OK:
+        print("[DEBUG] wx.DirDialog returned OK.")
+        paths = dialog.GetPaths()
+        print(f"[DEBUG] wx.DirDialog selected paths: {paths}")
+        if isinstance(paths, (list, tuple)):
+            folder_paths = list(paths)
+        else:
+            folder_paths = [paths]
+    else:
+        print("[DEBUG] wx.DirDialog was cancelled.")
+    print(f"[DEBUG] Returning folder_paths: {folder_paths}")
+    dialog.Destroy()
+    # Do NOT call app.Destroy() here, let it go out of scope after all dialogs
+    return folder_paths, app
+
+def select_destination_folder(app):
+    print("[DEBUG] Launching wx.DirDialog for destination folder selection...")
+    dialog = wx.DirDialog(None, "Select destination folder", style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+    destination_folder = None
+    if dialog.ShowModal() == wx.ID_OK:
+        destination_folder = dialog.GetPath()
+        print(f"[DEBUG] Destination folder selected: {destination_folder}")
+    else:
+        print("[DEBUG] Destination folder dialog was cancelled.")
+    dialog.Destroy()
+    return destination_folder
 
 def flatten_folders(folder_paths, destination_folder):
     if not os.path.exists(destination_folder):
@@ -28,35 +60,27 @@ def flatten_folders(folder_paths, destination_folder):
                 print(f"Copied {source_file} -> {destination_file}")
 
 def select_folders():
-    root = tk.Tk()
-    root.withdraw()
-
-    folder_paths = []
-    while True:
-        prompt = "Select a folder to flatten"
-        if folder_paths:
-            prompt += f"\n(Already selected: {', '.join(folder_paths)})"
-        folder = filedialog.askdirectory(title=prompt)
-        if not folder:
-            break
-        if folder not in folder_paths:
-            folder_paths.append(folder)
-        # Ask if the user wants to select another folder
-        more = messagebox.askyesno("Select More?", "Do you want to select another folder?")
-        if not more:
-            break
-
+    print("[DEBUG] Starting select_folders()...")
+    folder_paths, app = select_multiple_folders()
+    print(f"[DEBUG] Folders selected: {folder_paths}")
     if not folder_paths:
-        messagebox.showinfo("Info", "No folders selected.")
+        print("[DEBUG] No folders selected, showing info dialog.")
+        wx.MessageBox("No folders selected.", "Info", wx.OK | wx.ICON_INFORMATION)
+        app.Destroy()
         return
 
-    destination_folder = filedialog.askdirectory(title="Select destination folder")
+    destination_folder = select_destination_folder(app)
     if not destination_folder:
-        messagebox.showinfo("Info", "No destination folder selected.")
+        print("[DEBUG] No destination folder selected, showing info dialog.")
+        wx.MessageBox("No destination folder selected.", "Info", wx.OK | wx.ICON_INFORMATION)
+        app.Destroy()
         return
 
+    print("[DEBUG] Calling flatten_folders...")
     flatten_folders(folder_paths, destination_folder)
-    messagebox.showinfo("Done", "All folders have been flattened!")
+    print("[DEBUG] Flattening complete, showing done dialog.")
+    wx.MessageBox("All folders have been flattened!", "Done", wx.OK | wx.ICON_INFORMATION)
+    app.Destroy()
 
 if __name__ == "__main__":
     select_folders()
