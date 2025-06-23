@@ -2,6 +2,8 @@ import streamlit as st
 import os
 import shutil
 import tempfile
+import zipfile
+import io
 
 st.set_page_config(page_title="Folder Flattener", layout="centered")
 st.title("📁 Folder Flattener Web App")
@@ -56,4 +58,18 @@ if st.button("Flatten Files"):
                 st.warning(f"Skipped {file_name}: {e}")
             progress.progress((i + 1) / len(uploaded_files))
         st.success(f"Done! {copied} files copied, {renamed} renamed, {skipped} skipped.")
-        st.write(f"All files are now in: `{dest_dir}`") 
+        st.write(f"All files are now in: `{dest_dir}`")
+        # --- Zip and provide download link ---
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for file_name in os.listdir(dest_dir):
+                file_path = os.path.join(dest_dir, file_name)
+                if os.path.isfile(file_path):
+                    zipf.write(file_path, arcname=file_name)
+        zip_buffer.seek(0)
+        st.download_button(
+            label="Download Flattened Files as ZIP",
+            data=zip_buffer,
+            file_name="flattened_files.zip",
+            mime="application/zip"
+        ) 
